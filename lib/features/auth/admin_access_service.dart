@@ -17,8 +17,8 @@ class AdminAccessService {
       data: {
         'telegram_user_id': user?.id,
         // Development fallback. Remove this fallback before production.
-        //'telegram_username': user?.username,
-        'telegram_username': user?.username ?? 'RadicalaAI',
+        'telegram_username': user?.username,
+        //'telegram_username': user?.username ?? 'RadicalaAI',
         'init_data': telegram.initData,
       },
       options: Options(
