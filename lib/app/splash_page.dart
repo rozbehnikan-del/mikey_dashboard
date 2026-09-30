@@ -1,11 +1,14 @@
 import 'dart:async';
 
+import 'package:dashboard_core/dashboard_core.dart';
 import 'package:flutter/material.dart';
 
 import '../features/auth/admin_gate.dart';
 
 class SplashPage extends StatefulWidget {
-  const SplashPage({super.key});
+  final ProjectConfig project;
+
+  const SplashPage({super.key, required this.project});
 
   @override
   State<SplashPage> createState() => _SplashPageState();
@@ -23,7 +26,7 @@ class _SplashPageState extends State<SplashPage> {
 
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
-          builder: (_) => const AdminGate(),
+          builder: (_) => AdminGate(project: widget.project),
         ),
       );
     });
@@ -53,11 +56,13 @@ class _SplashPageState extends State<SplashPage> {
                   height: 180,
                   padding: const EdgeInsets.all(18),
                   decoration: BoxDecoration(
-                    color: isDark ? const Color(0xFF111827) : Colors.white,
+                    color: isDark ? widget.project.cardDarkColor : Colors.white,
                     borderRadius: BorderRadius.circular(36),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(isDark ? 0.22 : 0.08),
+                        color: Colors.black.withValues(
+                          alpha: isDark ? 0.22 : 0.08,
+                        ),
                         blurRadius: 28,
                         offset: const Offset(0, 14),
                       ),
@@ -66,7 +71,7 @@ class _SplashPageState extends State<SplashPage> {
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(24),
                     child: Image.asset(
-                      'assets/images/splash.png',
+                      widget.project.splashAssetPath,
                       fit: BoxFit.contain,
                       errorBuilder: (context, error, stackTrace) {
                         return const Icon(
@@ -80,7 +85,7 @@ class _SplashPageState extends State<SplashPage> {
                 ),
                 const SizedBox(height: 28),
                 Text(
-                  'Mikey Expert Dashboard',
+                  widget.project.splashTitle,
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: isDark ? Colors.white : const Color(0xFF111827),
@@ -91,7 +96,7 @@ class _SplashPageState extends State<SplashPage> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Loading analytics and report data...',
+                  widget.project.splashLoadingText,
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: isDark ? Colors.white70 : const Color(0xFF6B7280),

@@ -1,20 +1,28 @@
+import 'package:dashboard_core/dashboard_core.dart' show ProjectConfig;
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 
 import '../../app/app_form_styles.dart';
+import '../broadcast/broadcast_service.dart';
 import '../dashboard/dashboard_page.dart';
 import '../signals/signals_page.dart';
 import '../broadcast/broadcast_page.dart';
 import '../signals/campaign_model.dart';
 import '../signals/signal_service.dart';
-import 'package:dio/dio.dart';
 
 class MainShellPage extends StatefulWidget {
+  final ProjectConfig project;
+  final Dio dio;
   final String? adminUsername;
+  final int? adminTelegramUserId;
   final String? adminRole;
 
   const MainShellPage({
     super.key,
+    required this.project,
+    required this.dio,
     required this.adminUsername,
+    required this.adminTelegramUserId,
     required this.adminRole,
   });
 
@@ -29,12 +37,14 @@ class _MainShellPageState extends State<MainShellPage> {
     _ShellTab(
       label: 'Dashboard',
       icon: Icons.dashboard_rounded,
-      page: const DashboardPage(),
+      page: DashboardPage(dio: widget.dio),
     ),
     _ShellTab(
       label: 'Signals',
       icon: Icons.campaign_rounded,
       page: SignalsPage(
+        signalService: SignalService(widget.dio),
+        broadcastService: BroadcastService(widget.dio),
         adminUsername: widget.adminUsername,
         adminRole: widget.adminRole,
         showHeader: false,
@@ -46,6 +56,7 @@ class _MainShellPageState extends State<MainShellPage> {
       label: 'Broadcast',
       icon: Icons.mark_email_read_rounded,
       page: _BroadcastTabPage(
+        dio: widget.dio,
         adminUsername: widget.adminUsername,
       ),
     ),
@@ -67,6 +78,7 @@ class _MainShellPageState extends State<MainShellPage> {
                 onSelected: _selectTab,
                 adminUsername: widget.adminUsername,
                 adminRole: widget.adminRole,
+                project: widget.project,
               ),
             Expanded(
               child: _tabs[_selectedIndex].page,
@@ -80,6 +92,7 @@ class _MainShellPageState extends State<MainShellPage> {
               tabs: _tabs,
               selectedIndex: _selectedIndex,
               onSelected: _selectTab,
+              project: widget.project,
             ),
     );
   }
@@ -109,6 +122,7 @@ class _SideNavigation extends StatelessWidget {
   final ValueChanged<int> onSelected;
   final String? adminUsername;
   final String? adminRole;
+  final ProjectConfig project;
 
   const _SideNavigation({
     required this.tabs,
@@ -116,6 +130,7 @@ class _SideNavigation extends StatelessWidget {
     required this.onSelected,
     required this.adminUsername,
     required this.adminRole,
+    required this.project,
   });
 
   @override
@@ -126,10 +141,12 @@ class _SideNavigation extends StatelessWidget {
     final role = adminRole?.trim().isNotEmpty == true ? adminRole! : 'admin';
 
     return Container(
-      width: 260,
+      width: 280,
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: appCardBackgroundColor(context),
+        color: appIsDarkMode(context)
+            ? project.cardDarkColor
+            : appCardBackgroundColor(context),
         border: Border(
           right: BorderSide(
             color: appBorderColor(context),
@@ -142,6 +159,7 @@ class _SideNavigation extends StatelessWidget {
           _BrandHeader(
             username: username,
             role: role,
+            project: project,
           ),
           const SizedBox(height: 24),
           for (int i = 0; i < tabs.length; i++)
@@ -149,10 +167,11 @@ class _SideNavigation extends StatelessWidget {
               tab: tabs[i],
               selected: selectedIndex == i,
               onTap: () => onSelected(i),
+              primaryColor: project.primaryColor,
             ),
           const Spacer(),
           Text(
-            'Mikey Expert System',
+            project.dashboardSubtitle,
             style: TextStyle(
               color: appSecondaryTextColor(context),
               fontSize: 12,
@@ -169,10 +188,12 @@ class _SideNavigation extends StatelessWidget {
 class _BrandHeader extends StatelessWidget {
   final String username;
   final String role;
+  final ProjectConfig project;
 
   const _BrandHeader({
     required this.username,
     required this.role,
+    required this.project,
   });
 
   @override
@@ -183,11 +204,15 @@ class _BrandHeader extends StatelessWidget {
           height: 46,
           width: 46,
           decoration: BoxDecoration(
-            color: const Color(0xFF2563EB),
-            borderRadius: BorderRadius.circular(16),
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [project.primaryColor, project.secondaryColor],
+            ),
+            borderRadius: BorderRadius.circular(18),
           ),
           child: const Icon(
-            Icons.insights_rounded,
+            Icons.auto_graph_rounded,
             color: Colors.white,
             size: 26,
           ),
@@ -198,7 +223,9 @@ class _BrandHeader extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Mikey',
+                project.displayName,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
                 style: TextStyle(
                   color: appPrimaryTextColor(context),
                   fontSize: 20,
@@ -230,21 +257,22 @@ class _SideNavItem extends StatelessWidget {
   final _ShellTab tab;
   final bool selected;
   final VoidCallback onTap;
+  final Color primaryColor;
 
   const _SideNavItem({
     required this.tab,
     required this.selected,
     required this.onTap,
+    required this.primaryColor,
   });
 
   @override
   Widget build(BuildContext context) {
     final selectedBg = appIsDarkMode(context)
-        ? const Color(0xFF1E3A8A)
-        : const Color(0xFFEFF6FF);
+        ? primaryColor.withValues(alpha: 0.22)
+        : primaryColor.withValues(alpha: 0.12);
 
-    final selectedColor =
-        appIsDarkMode(context) ? Colors.white : const Color(0xFF2563EB);
+    final selectedColor = appIsDarkMode(context) ? Colors.white : primaryColor;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
@@ -290,11 +318,13 @@ class _BottomNavigation extends StatelessWidget {
   final List<_ShellTab> tabs;
   final int selectedIndex;
   final ValueChanged<int> onSelected;
+  final ProjectConfig project;
 
   const _BottomNavigation({
     required this.tabs,
     required this.selectedIndex,
     required this.onSelected,
+    required this.project,
   });
 
   @override
@@ -303,9 +333,7 @@ class _BottomNavigation extends StatelessWidget {
       selectedIndex: selectedIndex,
       onDestinationSelected: onSelected,
       backgroundColor: appCardBackgroundColor(context),
-      indicatorColor: appIsDarkMode(context)
-          ? const Color(0xFF1E3A8A)
-          : const Color(0xFFEFF6FF),
+      indicatorColor: project.primaryColor.withValues(alpha: 0.14),
       destinations: [
         for (final tab in tabs)
           NavigationDestination(
@@ -318,9 +346,11 @@ class _BottomNavigation extends StatelessWidget {
 } 
 
 class _BroadcastTabPage extends StatefulWidget {
+  final Dio dio;
   final String? adminUsername;
 
   const _BroadcastTabPage({
+    required this.dio,
     required this.adminUsername,
   });
 
@@ -335,7 +365,7 @@ class _BroadcastTabPageState extends State<_BroadcastTabPage> {
   @override
   void initState() {
     super.initState();
-    _service = SignalService(Dio());
+    _service = SignalService(widget.dio);
     _futureCampaigns = _service.fetchCampaigns();
   }
 
@@ -423,8 +453,10 @@ class _BroadcastTabPageState extends State<_BroadcastTabPage> {
                   }
 
                   return BroadcastPage(
+                    service: BroadcastService(widget.dio),
                     campaigns: snapshot.data ?? [],
                     adminUsername: widget.adminUsername,
+                    adminTelegramUserId: null,
                   );
                 },
               ),

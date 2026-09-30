@@ -17,7 +17,9 @@ import '../../app/dashboard_card.dart';
 
 
 class DashboardPage extends StatefulWidget {
-  const DashboardPage({super.key});
+  final Dio dio;
+
+  const DashboardPage({super.key, required this.dio});
 
   @override
   State<DashboardPage> createState() => _DashboardPageState();
@@ -30,7 +32,7 @@ class _DashboardPageState extends State<DashboardPage> {
   @override
   void initState() {
     super.initState();
-    _service = DashboardService(Dio());
+    _service = DashboardService(widget.dio);
     _futureDashboard = _service.fetchDashboard();
   }
 

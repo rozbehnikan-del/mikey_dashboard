@@ -1,11 +1,14 @@
+import 'package:dashboard_core/dashboard_core.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
 import '../core/telegram/telegram_web_app.dart';
 import 'splash_page.dart';
 
-class MikeyApp extends StatelessWidget {
-  const MikeyApp({super.key});
+class DashboardApp extends StatelessWidget {
+  final ProjectConfig project;
+
+  const DashboardApp({super.key, required this.project});
 
   @override
   Widget build(BuildContext context) {
@@ -13,45 +16,48 @@ class MikeyApp extends StatelessWidget {
     final isDark = telegram.isDarkMode;
 
     return MaterialApp(
-      title: 'Mikey Dashboard',
+      title: project.appTitle,
       debugShowCheckedModeBanner: false,
-      scrollBehavior: const MikeyScrollBehavior(),
+      scrollBehavior: const DashboardScrollBehavior(),
       themeMode: isDark ? ThemeMode.dark : ThemeMode.light,
       theme: _buildTheme(brightness: Brightness.light),
       darkTheme: _buildTheme(brightness: Brightness.dark),
-      home: const SplashPage(),
+      home: SplashPage(project: project),
     );
   }
 
-  ThemeData _buildTheme({
-    required Brightness brightness,
-  }) {
+  ThemeData _buildTheme({required Brightness brightness}) {
     final isDark = brightness == Brightness.dark;
 
     final colorScheme = ColorScheme.fromSeed(
-      seedColor: const Color(0xFF2563EB),
+      seedColor: project.primaryColor,
       brightness: brightness,
     );
 
-    final scaffoldBackground =
-        isDark ? const Color(0xFF0F172A) : const Color(0xFFF6F8FB);
+    final scaffoldBackground = isDark
+        ? project.darkBackgroundColor
+        : const Color(0xFFF6F8FB);
 
-    final cardColor = isDark ? const Color(0xFF111827) : Colors.white;
-
+    final cardColor = isDark ? project.cardDarkColor : Colors.white;
     final primaryText = isDark ? Colors.white : const Color(0xFF111827);
-
     final secondaryText = isDark ? Colors.white70 : const Color(0xFF6B7280);
-
     final borderColor = isDark ? Colors.white12 : const Color(0xFFE5E7EB);
 
     return ThemeData(
       useMaterial3: true,
       brightness: brightness,
-      colorScheme: colorScheme,
+      colorScheme: colorScheme.copyWith(
+        primary: project.primaryColor,
+        secondary: project.secondaryColor,
+        surface: cardColor,
+      ),
       scaffoldBackgroundColor: scaffoldBackground,
       canvasColor: scaffoldBackground,
       cardColor: cardColor,
       fontFamily: 'Roboto',
+      iconTheme: IconThemeData(
+        color: isDark ? project.softAccentColor : project.primaryColor,
+      ),
       textTheme: TextTheme(
         headlineLarge: TextStyle(color: primaryText, fontWeight: FontWeight.w900),
         headlineMedium: TextStyle(color: primaryText, fontWeight: FontWeight.w900),
@@ -74,7 +80,7 @@ class MikeyApp extends StatelessWidget {
           fontWeight: FontWeight.w500,
         ),
         floatingLabelStyle: TextStyle(
-          color: isDark ? Colors.white : const Color(0xFF2563EB),
+          color: isDark ? project.secondaryColor : project.primaryColor,
           fontWeight: FontWeight.w800,
         ),
         contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 18),
@@ -88,7 +94,7 @@ class MikeyApp extends StatelessWidget {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: Color(0xFF2563EB), width: 1.5),
+          borderSide: BorderSide(color: project.primaryColor, width: 1.5),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
@@ -101,29 +107,35 @@ class MikeyApp extends StatelessWidget {
       ),
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
-          backgroundColor: const Color(0xFF2563EB),
+          backgroundColor: project.primaryColor,
           foregroundColor: Colors.white,
-          disabledBackgroundColor:
-              isDark ? const Color(0xFF334155) : const Color(0xFFD1D5DB),
-          disabledForegroundColor:
-              isDark ? Colors.white38 : const Color(0xFF6B7280),
+          disabledBackgroundColor: isDark
+              ? const Color(0xFF334155)
+              : const Color(0xFFD1D5DB),
+          disabledForegroundColor: isDark
+              ? Colors.white38
+              : const Color(0xFF6B7280),
           textStyle: const TextStyle(fontWeight: FontWeight.w800),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(999),
+          ),
         ),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
-          foregroundColor: isDark ? Colors.white : const Color(0xFF475569),
+          foregroundColor: isDark ? project.secondaryColor : project.primaryColor,
           side: BorderSide(
-            color: isDark ? Colors.white24 : const Color(0xFF9CA3AF),
+            color: isDark ? project.secondaryColor : project.primaryColor,
           ),
           textStyle: const TextStyle(fontWeight: FontWeight.w800),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(999),
+          ),
         ),
       ),
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
-          foregroundColor: const Color(0xFF2563EB),
+          foregroundColor: isDark ? project.secondaryColor : project.primaryColor,
           textStyle: const TextStyle(fontWeight: FontWeight.w800),
         ),
       ),
@@ -144,8 +156,8 @@ class MikeyApp extends StatelessWidget {
   }
 }
 
-class MikeyScrollBehavior extends MaterialScrollBehavior {
-  const MikeyScrollBehavior();
+class DashboardScrollBehavior extends MaterialScrollBehavior {
+  const DashboardScrollBehavior();
 
   @override
   Set<PointerDeviceKind> get dragDevices {

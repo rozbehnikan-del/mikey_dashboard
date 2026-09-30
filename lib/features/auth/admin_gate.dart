@@ -1,26 +1,33 @@
 import 'package:dio/dio.dart';
+import 'package:dashboard_core/dashboard_core.dart';
 import 'package:flutter/material.dart';
-import 'admin_access_model.dart';
-import 'admin_access_service.dart';
+
+import '../../core/telegram/telegram_web_app.dart';
 import '../home/main_shell_page.dart';
 
-
-
 class AdminGate extends StatefulWidget {
-  const AdminGate({super.key});
+  final ProjectConfig project;
+
+  const AdminGate({super.key, required this.project});
 
   @override
   State<AdminGate> createState() => _AdminGateState();
 }
 
 class _AdminGateState extends State<AdminGate> {
+  late final Dio _dio;
   late final AdminAccessService _service;
   late Future<AdminAccessModel> _futureAccess;
 
   @override
   void initState() {
     super.initState();
-    _service = AdminAccessService(Dio());
+    _dio = DioFactory.create(widget.project);
+    _service = AdminAccessService(
+      _dio,
+      widget.project,
+      telegramContext: TelegramWebAppContext(TelegramWebApp.instance),
+    );
     _futureAccess = _service.checkAccess();
   }
 
@@ -55,7 +62,10 @@ class _AdminGateState extends State<AdminGate> {
         }
 
         return MainShellPage(
+          project: widget.project,
+          dio: _dio,
           adminUsername: access.telegramUsername,
+          adminTelegramUserId: access.telegramUserId,
           adminRole: access.role,
         );
       },

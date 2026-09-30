@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
-import 'app/mikey_app.dart';
+import 'app/dashboard_app.dart';
+import 'config/projects/mikey_config.dart';
 import 'core/telegram/telegram_web_app.dart';
 
 void main() {
@@ -8,5 +9,5 @@ void main() {
 
   TelegramWebApp.instance.init();
 
-  runApp(const MikeyApp());
+  runApp(DashboardApp(project: mikeyConfig));
 }
