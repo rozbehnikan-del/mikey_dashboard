@@ -1,0 +1,3 @@
+[submodule "dashboard_core"]
+	path = dashboard_core
+	url = https://github.com/rozbehnikan-del/dashboard_core.git
