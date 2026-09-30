@@ -41,7 +41,7 @@ class CampaignCard extends StatelessWidget {
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(dark ? 0.18 : 0.035),
+              color: Colors.black.withValues(alpha: dark ? 0.18 : 0.035),
               blurRadius: 14,
               offset: const Offset(0, 6),
             ),

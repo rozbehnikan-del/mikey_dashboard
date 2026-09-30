@@ -27,7 +27,7 @@ class ActionCard extends StatelessWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(
+            color: Colors.black.withValues(alpha: 
               appIsDarkMode(context) ? 0.18 : 0.08,
             ),
             blurRadius: 18,

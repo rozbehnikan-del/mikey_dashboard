@@ -369,7 +369,7 @@ class _CreateBroadcastSheetState extends State<CreateBroadcastSheet> {
                       const SizedBox(height: 14),
 
                       DropdownButtonFormField<String>(
-                        value: _messageType,
+                        initialValue: _messageType,
                         style: appFieldTextStyle(context),
                         dropdownColor: appCardBackgroundColor(context),
                         iconEnabledColor: appSecondaryTextColor(context),
@@ -435,7 +435,7 @@ class _CreateBroadcastSheetState extends State<CreateBroadcastSheet> {
                       const SizedBox(height: 14),
 
                       DropdownButtonFormField<String>(
-                        value: _targetSegment,
+                        initialValue: _targetSegment,
                         style: appFieldTextStyle(context),
                         dropdownColor: appCardBackgroundColor(context),
                         iconEnabledColor: appSecondaryTextColor(context),
@@ -529,7 +529,7 @@ class _CreateBroadcastSheetState extends State<CreateBroadcastSheet> {
                       if (_targetSegment == 'campaign_leads') ...[
                         const SizedBox(height: 14),
                         DropdownButtonFormField<int>(
-                          value: _campaignId,
+                          initialValue: _campaignId,
                           style: appFieldTextStyle(context),
                           dropdownColor: appCardBackgroundColor(context),
                           iconEnabledColor: appSecondaryTextColor(context),
@@ -752,7 +752,7 @@ class _ScheduleCard extends StatelessWidget {
           SwitchListTile.adaptive(
             contentPadding: EdgeInsets.zero,
             value: scheduleForLater,
-            activeColor: const Color(0xFF2563EB),
+            activeThumbColor: const Color(0xFF2563EB),
             onChanged: onToggle,
             title: Text(
               'Schedule for later',
@@ -1052,7 +1052,7 @@ class _DarkChip extends StatelessWidget {
         vertical: 5,
       ),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.10),
+        color: Colors.white.withValues(alpha: 0.10),
         borderRadius: BorderRadius.circular(999),
         border: Border.all(color: Colors.white12),
       ),

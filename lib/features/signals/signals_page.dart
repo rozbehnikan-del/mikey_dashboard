@@ -542,7 +542,7 @@ class _CreateSignalCard extends StatelessWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(appIsDarkMode(context) ? 0.18 : 0.08),
+            color: Colors.black.withValues(alpha: appIsDarkMode(context) ? 0.18 : 0.08),
             blurRadius: 18,
             offset: const Offset(0, 8),
           ),
@@ -799,7 +799,7 @@ class _SelectedCampaignSummary extends StatelessWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(appIsDarkMode(context) ? 0.18 : 0.06),
+            color: Colors.black.withValues(alpha: appIsDarkMode(context) ? 0.18 : 0.06),
             blurRadius: 18,
             offset: const Offset(0, 8),
           ),
@@ -916,7 +916,7 @@ class _SelectedCampaignSummary extends StatelessWidget {
             width: double.infinity,
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.08),
+              color: Colors.white.withValues(alpha: 0.08),
               borderRadius: BorderRadius.circular(16),
               border: Border.all(color: Colors.white12),
             ),
@@ -1091,9 +1091,9 @@ class _DarkStatusPill extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.14),
+        color: color.withValues(alpha: 0.14),
         borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: color.withOpacity(0.28)),
+        border: Border.all(color: color.withValues(alpha: 0.28)),
       ),
       child: Text(
         status.toUpperCase(),
@@ -1213,7 +1213,7 @@ class _StatCard extends StatelessWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(appIsDarkMode(context) ? 0.18 : 0.035),
+            color: Colors.black.withValues(alpha: appIsDarkMode(context) ? 0.18 : 0.035),
             blurRadius: 14,
             offset: const Offset(0, 6),
           ),
@@ -1277,7 +1277,7 @@ class SignalHistoryCard extends StatelessWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(appIsDarkMode(context) ? 0.18 : 0.035),
+            color: Colors.black.withValues(alpha: appIsDarkMode(context) ? 0.18 : 0.035),
             blurRadius: 14,
             offset: const Offset(0, 6),
           ),
@@ -1510,7 +1510,7 @@ class _SignalHistorySection extends StatelessWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(
+            color: Colors.black.withValues(alpha: 
               appIsDarkMode(context) ? 0.18 : 0.035,
             ),
             blurRadius: 14,

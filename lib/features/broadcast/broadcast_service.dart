@@ -15,7 +15,7 @@ class BroadcastService {
     final response = await _dio.post(
       'https://n8nmicky.launchman.xyz/webhook/mikey-broadcast-audience-preview',
       data: {
-        ?'campaign_id': campaignId,
+        'campaign_id': ?campaignId,
         'target_segment': targetSegment,
       },
       options: Options(
@@ -47,7 +47,7 @@ class BroadcastService {
     final response = await _dio.post(
       'https://n8nmicky.launchman.xyz/webhook/mikey-broadcast-create',
       data: {
-        ?'campaign_id': campaignId,
+        'campaign_id': ?campaignId,
         'title': title,
         'message_type': messageType,
         'target_segment': targetSegment,

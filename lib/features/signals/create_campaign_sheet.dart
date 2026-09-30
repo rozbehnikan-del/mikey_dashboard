@@ -242,7 +242,7 @@ class _CreateCampaignSheetState extends State<CreateCampaignSheet> {
                 const SizedBox(height: 10),
 
                 DropdownButtonFormField<String>(
-                  value: _status,
+                  initialValue: _status,
                   style: appFieldTextStyle(context),
                   dropdownColor: appCardBackgroundColor(context),
                   iconEnabledColor: appSecondaryTextColor(context),
@@ -467,7 +467,7 @@ class _PreviewChip extends StatelessWidget {
         vertical: 5,
       ),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.10),
+        color: Colors.white.withValues(alpha: 0.10),
         borderRadius: BorderRadius.circular(999),
         border: Border.all(color: Colors.white12),
       ),

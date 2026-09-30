@@ -173,7 +173,7 @@ class CampaignLeadList extends StatelessWidget {
       ),
       boxShadow: [
         BoxShadow(
-          color: Colors.black.withOpacity(
+          color: Colors.black.withValues(alpha: 
             appIsDarkMode(context) ? 0.18 : 0.035,
           ),
           blurRadius: 14,

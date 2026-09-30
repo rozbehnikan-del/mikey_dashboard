@@ -246,7 +246,7 @@ This is a test signal.
                 const SizedBox(height: 10),
 
                 DropdownButtonFormField<int>(
-                  value: _selectedCampaignId,
+                  initialValue: _selectedCampaignId,
                   isExpanded: true,
                   style: appFieldTextStyle(context),
                   dropdownColor: appCardBackgroundColor(context),
@@ -414,7 +414,7 @@ This is a test signal.
                 const SizedBox(height: 10),
 
                 DropdownButtonFormField<String>(
-                  value: _riskLevel,
+                  initialValue: _riskLevel,
                   style: appFieldTextStyle(context),
                   dropdownColor: appCardBackgroundColor(context),
                   iconEnabledColor: appSecondaryTextColor(context),
