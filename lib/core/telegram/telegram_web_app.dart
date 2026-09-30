@@ -1,9 +1,14 @@
+import 'dart:convert';
 import 'dart:js_interop';
-
-import 'package:dashboard_core/dashboard_core.dart';
 
 @JS('window.Telegram.WebApp')
 external JSObject? get _telegramWebApp;
+
+@JS('window.Telegram.WebView')
+external JSObject? get _telegramWebView;
+
+@JS('window.sessionStorage')
+external JSObject? get _sessionStorage;
 
 class TelegramUser {
   final int? id;
@@ -39,12 +44,47 @@ class TelegramWebApp {
   static final TelegramWebApp instance = TelegramWebApp._();
 
   JSObject? _webApp;
+  String? _launchInitData;
+  TelegramUser? _launchUser;
 
   bool get isAvailable => _webApp != null;
+
+  String? get version {
+    try {
+      if (_webApp == null) return null;
+      return _getString(_webApp!, 'version');
+    } catch (_) {
+      return null;
+    }
+  }
+
+  bool get hasInitDataUnsafe {
+    try {
+      if (_webApp == null) return _launchInitData != null;
+      final unsafe = _getProperty(_webApp!, 'initDataUnsafe');
+      return unsafe != null || _launchInitData != null;
+    } catch (_) {
+      return _launchInitData != null;
+    }
+  }
+
+  bool get hasUnsafeUser {
+    try {
+      if (_webApp == null) return _launchUser != null;
+      final unsafe = _getProperty(_webApp!, 'initDataUnsafe');
+      if (unsafe == null) return _launchUser != null;
+
+      final rawUser = _getProperty(unsafe as JSObject, 'user');
+      return rawUser != null || _launchUser != null;
+    } catch (_) {
+      return _launchUser != null;
+    }
+  }
 
   void init() {
     try {
       _webApp = _telegramWebApp;
+      _captureLaunchData();
 
       if (_webApp == null) return;
 
@@ -54,6 +94,13 @@ class TelegramWebApp {
     } catch (_) {
       _webApp = null;
     }
+  }
+
+  Future<void> waitForLaunchData() async {
+    if (initData.isNotEmpty || user != null) return;
+
+    await Future<void>.delayed(Duration.zero);
+    init();
   }
 
   String get colorScheme {
@@ -70,23 +117,26 @@ class TelegramWebApp {
 
   String get initData {
     try {
-      if (_webApp == null) return '';
+      if (_webApp == null) return _launchInitData ?? '';
       final value = _getProperty(_webApp!, 'initData');
-      return value?.toString() ?? '';
+      final webAppInitData = value?.toString() ?? '';
+      if (webAppInitData.isNotEmpty) return webAppInitData;
+
+      return _launchInitData ?? '';
     } catch (_) {
-      return '';
+      return _launchInitData ?? '';
     }
   }
 
   TelegramUser? get user {
     try {
-      if (_webApp == null) return null;
+      if (_webApp == null) return _launchUser;
 
       final unsafe = _getProperty(_webApp!, 'initDataUnsafe');
-      if (unsafe == null) return null;
+      if (unsafe == null) return _launchUser;
 
       final rawUser = _getProperty(unsafe as JSObject, 'user');
-      if (rawUser == null) return null;
+      if (rawUser == null) return _launchUser;
 
       final userObject = rawUser as JSObject;
 
@@ -98,7 +148,7 @@ class TelegramWebApp {
         languageCode: _getString(userObject, 'language_code'),
       );
     } catch (_) {
-      return null;
+      return _launchUser;
     }
   }
 
@@ -165,31 +215,125 @@ class TelegramWebApp {
       return null;
     }
   }
-}
 
-class TelegramWebAppContext implements TelegramContext {
-  final TelegramWebApp webApp;
+  void _captureLaunchData() {
+    try {
+      final launchInitData = _readLaunchInitData();
+      if (launchInitData == null || launchInitData.isEmpty) return;
 
-  const TelegramWebAppContext(this.webApp);
+      _launchInitData = launchInitData;
+      _launchUser = _parseLaunchUser(launchInitData);
+    } catch (_) {}
+  }
 
-  @override
-  String get initData => webApp.initData;
+  String? _readLaunchInitData() {
+    final webAppData = _readWebAppData();
+    if (webAppData != null && webAppData.isNotEmpty) {
+      return webAppData;
+    }
 
-  @override
-  bool get isDarkMode => webApp.isDarkMode;
+    final webViewData = _readWebViewInitData();
+    if (webViewData != null && webViewData.isNotEmpty) {
+      return webViewData;
+    }
 
-  @override
-  TelegramUserData? get user {
-    final appUser = webApp.user;
-    final id = appUser?.id;
-    if (appUser == null || id == null) return null;
+    final storedData = _readStoredInitData();
+    if (storedData != null && storedData.isNotEmpty) {
+      return storedData;
+    }
 
-    return TelegramUserData(
-      id: id,
-      firstName: appUser.firstName,
-      lastName: appUser.lastName,
-      username: appUser.username,
+    final fragmentData = _readLaunchValue(Uri.base.fragment);
+    if (fragmentData != null && fragmentData.isNotEmpty) {
+      return fragmentData;
+    }
+
+    final queryData = Uri.base.queryParameters['tgWebAppData'];
+    if (queryData != null && queryData.isNotEmpty) {
+      return queryData;
+    }
+
+    return null;
+  }
+
+  String? _readWebAppData() {
+    try {
+      if (_webApp == null) return null;
+      final value = _getProperty(_webApp!, 'initData');
+      final initData = value?.toString() ?? '';
+      if (initData.isNotEmpty) return initData;
+    } catch (_) {}
+
+    return null;
+  }
+
+  String? _readWebViewInitData() {
+    try {
+      final webView = _telegramWebView;
+      if (webView == null) return null;
+
+      final initParams = _getProperty(webView, 'initParams');
+      if (initParams == null) return null;
+
+      final value = _getProperty(initParams as JSObject, 'tgWebAppData');
+      final initData = value?.toString() ?? '';
+      if (initData.isNotEmpty) return initData;
+    } catch (_) {}
+
+    return null;
+  }
+
+  String? _readStoredInitData() {
+    try {
+      final storage = _sessionStorage;
+      if (storage == null) return null;
+
+      final raw = _callReturningMethod(storage, 'getItem', [
+        '__telegram__initParams',
+      ])?.toString();
+      if (raw == null || raw.isEmpty || raw == 'null') return null;
+
+      final params = jsonDecode(raw);
+      if (params is! Map<String, dynamic>) return null;
+
+      return params['tgWebAppData']?.toString();
+    } catch (_) {}
+
+    return null;
+  }
+
+  String? _readLaunchValue(String fragment) {
+    if (fragment.isEmpty) return null;
+
+    final queryIndex = fragment.indexOf('?');
+    final fragmentQuery = queryIndex == -1
+        ? fragment
+        : fragment.substring(queryIndex + 1);
+    final queryStart = fragmentQuery.startsWith('?') ? 1 : 0;
+    final values = Uri.splitQueryString(fragmentQuery.substring(queryStart));
+    return values['tgWebAppData'];
+  }
+
+  TelegramUser? _parseLaunchUser(String launchInitData) {
+    final values = Uri.splitQueryString(launchInitData);
+    final rawUser = values['user'];
+    if (rawUser == null || rawUser.isEmpty) return null;
+
+    final userJson = jsonDecode(rawUser);
+    if (userJson is! Map<String, dynamic>) return null;
+
+    return TelegramUser(
+      id: _toInt(userJson['id']),
+      firstName: userJson['first_name']?.toString(),
+      lastName: userJson['last_name']?.toString(),
+      username: userJson['username']?.toString(),
+      languageCode: userJson['language_code']?.toString(),
     );
+  }
+
+  int? _toInt(Object? value) {
+    if (value == null) return null;
+    if (value is int) return value;
+    return int.tryParse(value.toString());
   }
 }
 
@@ -223,6 +367,34 @@ void _callMethod(JSObject object, String method, List<Object?> args) {
       args[1].jsify(),
     );
     return;
+  }
+
+  throw UnsupportedError('Only up to 2 JS arguments are supported.');
+}
+
+JSAny? _callReturningMethod(
+  JSObject object,
+  String method,
+  List<Object?> args,
+) {
+  final function = object[method];
+
+  if (function == null) return null;
+
+  if (args.isEmpty) {
+    return (function as JSFunction).callAsFunction(object);
+  }
+
+  if (args.length == 1) {
+    return (function as JSFunction).callAsFunction(object, args[0].jsify());
+  }
+
+  if (args.length == 2) {
+    return (function as JSFunction).callAsFunction(
+      object,
+      args[0].jsify(),
+      args[1].jsify(),
+    );
   }
 
   throw UnsupportedError('Only up to 2 JS arguments are supported.');

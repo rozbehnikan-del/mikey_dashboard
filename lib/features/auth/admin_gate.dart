@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:dashboard_core/dashboard_core.dart';
 import 'package:flutter/material.dart';
 
+import '../../core/telegram/mikey_telegram_context.dart';
 import '../../core/telegram/telegram_web_app.dart';
 import '../home/main_shell_page.dart';
 
@@ -22,21 +23,53 @@ class _AdminGateState extends State<AdminGate> {
   @override
   void initState() {
     super.initState();
+    TelegramWebApp.instance.init();
     _dio = DioFactory.create(widget.project);
+    _dio.interceptors.add(
+      InterceptorsWrapper(
+        onRequest: (options, handler) {
+          if (options.method == 'GET') {
+            options.headers.remove(Headers.contentTypeHeader);
+          }
+          if (options.method == 'POST' &&
+              options.path == widget.project.apiEndpoints.adminMe) {
+            options.contentType = Headers.formUrlEncodedContentType;
+            options.headers[Headers.contentTypeHeader] =
+                Headers.formUrlEncodedContentType;
+          }
+          handler.next(options);
+        },
+      ),
+    );
     _service = AdminAccessService(
       _dio,
       widget.project,
-      telegramContext: TelegramWebAppContext(TelegramWebApp.instance),
+      telegramContext: MikeyTelegramContext(TelegramWebApp.instance),
     );
-    _futureAccess = _service.checkAccess();
+    _futureAccess = _checkAccess();
   }
 
   Future<void> _retry() async {
     setState(() {
-      _futureAccess = _service.checkAccess();
+      _futureAccess = _checkAccess();
     });
 
     await _futureAccess;
+  }
+
+  Future<AdminAccessModel> _checkAccess() async {
+    final webApp = TelegramWebApp.instance;
+    webApp.init();
+    await webApp.waitForLaunchData();
+
+    final telegram = MikeyTelegramContext(webApp);
+    final user = telegram.user;
+
+    if (telegram.initData.isEmpty || user?.id == null) {
+      throw const TelegramContextUnavailableException();
+    }
+
+    return _service.checkAccess();
   }
 
   @override
@@ -49,6 +82,10 @@ class _AdminGateState extends State<AdminGate> {
         }
 
         if (snapshot.hasError) {
+          if (snapshot.error is TelegramContextUnavailableException) {
+            return _TelegramContextUnavailableScreen(onRetry: _retry);
+          }
+
           return _AdminErrorScreen(
             error: snapshot.error.toString(),
             onRetry: _retry,
@@ -70,6 +107,15 @@ class _AdminGateState extends State<AdminGate> {
         );
       },
     );
+  }
+}
+
+class TelegramContextUnavailableException implements Exception {
+  const TelegramContextUnavailableException();
+
+  @override
+  String toString() {
+    return 'Telegram launch data is unavailable. Open this dashboard from the Telegram WebApp.';
   }
 }
 
@@ -196,6 +242,64 @@ class _AccessDeniedScreen extends StatelessWidget {
                     color: Color(0xFF6B7280),
                     height: 1.4,
                   ),
+                ),
+                const SizedBox(height: 18),
+                OutlinedButton.icon(
+                  onPressed: onRetry,
+                  icon: const Icon(Icons.refresh_rounded),
+                  label: const Text('Check again'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _TelegramContextUnavailableScreen extends StatelessWidget {
+  final Future<void> Function() onRetry;
+
+  const _TelegramContextUnavailableScreen({required this.onRetry});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF6F8FB),
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(color: const Color(0xFFE5E7EB)),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(
+                  Icons.send_rounded,
+                  color: Color(0xFF2563EB),
+                  size: 48,
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'Telegram context unavailable',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w900,
+                    color: Color(0xFF111827),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'Open this dashboard from the Telegram WebApp so Mikey can verify your real Telegram account.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: Color(0xFF6B7280), height: 1.4),
                 ),
                 const SizedBox(height: 18),
                 OutlinedButton.icon(

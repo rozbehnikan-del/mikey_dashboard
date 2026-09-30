@@ -5,6 +5,7 @@ import 'campaign_model.dart';
 
 class CreateSignalSheet extends StatefulWidget {
   final List<CampaignModel> campaigns;
+  final String adminUsername;
 
   final Future<void> Function({
     required int campaignId,
@@ -25,6 +26,7 @@ class CreateSignalSheet extends StatefulWidget {
   const CreateSignalSheet({
     super.key,
     required this.campaigns,
+    required this.adminUsername,
     required this.onSubmit,
   });
 
@@ -43,8 +45,8 @@ class _CreateSignalSheetState extends State<CreateSignalSheet> {
   final _tp1Controller = TextEditingController(text: '68000');
   final _tp2Controller = TextEditingController(text: '69500');
   final _tp3Controller = TextEditingController(text: '70500');
-  final _targetChatIdController = TextEditingController(text: '7376947596');
-  final _adminUsernameController = TextEditingController(text: 'RadicalaAI');
+  final _targetChatIdController = TextEditingController();
+  late final TextEditingController _adminUsernameController;
 
   int? _selectedCampaignId;
   String _riskLevel = 'medium';
@@ -53,6 +55,9 @@ class _CreateSignalSheetState extends State<CreateSignalSheet> {
   @override
   void initState() {
     super.initState();
+    _adminUsernameController = TextEditingController(
+      text: widget.adminUsername,
+    );
 
     if (widget.campaigns.isNotEmpty) {
       _selectedCampaignId = widget.campaigns.first.id;

@@ -31,8 +31,8 @@ const ProjectConfig mikeyConfig = ProjectConfig(
     mediaUpload: '/mikey-media-upload',
   ),
   admin: AdminConfig(
-    localDevelopmentBypassEnabled: true,
-    ownerTelegramUserId: 7376947596,
-    ownerTelegramUsername: 'RadicalaAI',
+    localDevelopmentBypassEnabled: false,
+    ownerTelegramUserId: 0,
+    ownerTelegramUsername: '',
   ),
 );

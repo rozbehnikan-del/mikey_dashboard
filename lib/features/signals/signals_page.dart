@@ -116,6 +116,7 @@ class _SignalsPageState extends State<SignalsPage> {
       builder: (_) {
         return CreateSignalSheet(
           campaigns: campaigns,
+          adminUsername: widget.adminUsername ?? '',
           onSubmit: _service.sendSignal,
         );
       },

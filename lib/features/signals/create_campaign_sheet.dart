@@ -72,6 +72,17 @@ class _CreateCampaignSheetState extends State<CreateCampaignSheet> {
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
 
+    final adminUsername = widget.adminUsername?.trim();
+    if (adminUsername == null || adminUsername.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Telegram admin username is unavailable.'),
+          backgroundColor: Color(0xFF991B1B),
+        ),
+      );
+      return;
+    }
+
     setState(() {
       _isSaving = true;
     });
@@ -84,7 +95,7 @@ class _CreateCampaignSheetState extends State<CreateCampaignSheet> {
         endDate: _endDateController.text.trim(),
         status: _status,
         targetSegment: _targetSegmentController.text.trim(),
-        createdByUsername: widget.adminUsername ?? 'RadicalaAI',
+        createdByUsername: adminUsername,
       );
 
       if (!mounted) return;
