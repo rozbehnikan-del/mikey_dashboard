@@ -1,8 +1,8 @@
-import 'package:dashboard_core/dashboard_core.dart' show ProjectConfig;
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 
 import '../../app/app_form_styles.dart';
+import '../../core/config/project_config.dart';
 import '../broadcast/broadcast_service.dart';
 import '../dashboard/dashboard_page.dart';
 import '../signals/signals_page.dart';

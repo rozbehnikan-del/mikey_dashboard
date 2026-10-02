@@ -1,7 +1,10 @@
 import 'package:dio/dio.dart';
-import 'package:dashboard_core/dashboard_core.dart';
 import 'package:flutter/material.dart';
 
+import '../../core/auth/models/admin_access_model.dart';
+import '../../core/auth/services/admin_access_service.dart';
+import '../../core/config/project_config.dart';
+import '../../core/networking/dio_factory.dart';
 import '../../core/telegram/mikey_telegram_context.dart';
 import '../../core/telegram/telegram_web_app.dart';
 import '../home/main_shell_page.dart';

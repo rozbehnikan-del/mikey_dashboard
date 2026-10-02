@@ -1,5 +1,4 @@
-import 'package:dashboard_core/dashboard_core.dart';
-
+import '../auth/telegram/telegram_context.dart';
 import 'telegram_web_app.dart';
 
 class MikeyTelegramContext implements TelegramContext {

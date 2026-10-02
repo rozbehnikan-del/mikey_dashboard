@@ -1,5 +1,6 @@
-import 'package:dashboard_core/dashboard_core.dart';
 import 'package:flutter/material.dart';
+
+import '../../core/config/project_config.dart';
 
 const ProjectConfig mikeyConfig = ProjectConfig(
   id: 'mikey',
