@@ -2,6 +2,22 @@ import 'package:flutter/material.dart';
 
 import '../../app/app_form_styles.dart';
 
+const Map<String, String> _targetSegments = {
+  'All Users': 'all_users',
+  'Pending Deposit': 'pending_deposit',
+  'Verified Users': 'verified_users',
+  'Qualified >=100': 'qualified_100',
+  'Qualified >=300': 'qualified_300',
+  'VIP Users': 'vip_500',
+  'Warm Leads': 'warm_leads',
+  'Engaged Leads': 'engaged_leads',
+  'New Leads': 'new_leads',
+  'Inactive 7d': 'inactive_7d',
+  'Inactive 30d': 'inactive_30d',
+  'Has Email': 'has_email',
+  'No Email': 'no_email',
+};
+
 class CreateCampaignSheet extends StatefulWidget {
   final String? adminUsername;
 
@@ -36,9 +52,9 @@ class _CreateCampaignSheetState extends State<CreateCampaignSheet> {
 
   final _startDateController = TextEditingController(text: '2026-06-01');
   final _endDateController = TextEditingController(text: '2026-06-30');
-  final _targetSegmentController = TextEditingController(text: 'vip_users');
 
   String _status = 'active';
+  String _targetSegment = 'vip_500';
   bool _isSaving = false;
 
   @override
@@ -64,7 +80,6 @@ class _CreateCampaignSheetState extends State<CreateCampaignSheet> {
     _descriptionController.dispose();
     _startDateController.dispose();
     _endDateController.dispose();
-    _targetSegmentController.dispose();
 
     super.dispose();
   }
@@ -94,7 +109,7 @@ class _CreateCampaignSheetState extends State<CreateCampaignSheet> {
         startDate: _startDateController.text.trim(),
         endDate: _endDateController.text.trim(),
         status: _status,
-        targetSegment: _targetSegmentController.text.trim(),
+        targetSegment: _targetSegment,
         createdByUsername: adminUsername,
       );
 
@@ -234,9 +249,34 @@ class _CreateCampaignSheetState extends State<CreateCampaignSheet> {
                   },
                 ),
 
-                _TextInput(
-                  controller: _targetSegmentController,
-                  label: 'Target Segment',
+                DropdownButtonFormField<String>(
+                  initialValue: _targetSegment,
+                  style: appFieldTextStyle(context),
+                  dropdownColor: appCardBackgroundColor(context),
+                  iconEnabledColor: appSecondaryTextColor(context),
+                  decoration: appInputDecoration(
+                    context,
+                    label: 'Target Segment',
+                  ),
+                  items: _targetSegments.entries
+                      .map(
+                        (entry) => DropdownMenuItem(
+                          value: entry.value,
+                          child: Text(
+                            entry.key,
+                            style: appFieldTextStyle(context),
+                          ),
+                        ),
+                      )
+                      .toList(),
+                  onChanged: _isSaving
+                      ? null
+                      : (value) {
+                          if (value == null) return;
+                          setState(() {
+                            _targetSegment = value;
+                          });
+                        },
                 ),
 
                 const SizedBox(height: 10),
@@ -289,7 +329,7 @@ class _CreateCampaignSheetState extends State<CreateCampaignSheet> {
                   name: _nameController.text.trim(),
                   description: _descriptionController.text.trim(),
                   status: _status,
-                  targetSegment: _targetSegmentController.text.trim(),
+                  targetSegment: _targetSegmentLabel(_targetSegment),
                   startDate: _startDateController.text.trim(),
                   endDate: _endDateController.text.trim(),
                 ),
@@ -319,6 +359,14 @@ class _CreateCampaignSheetState extends State<CreateCampaignSheet> {
       ),
     );
   }
+}
+
+String _targetSegmentLabel(String value) {
+  for (final entry in _targetSegments.entries) {
+    if (entry.value == value) return entry.key;
+  }
+
+  return value;
 }
 
 class _TextInput extends StatelessWidget {
@@ -441,7 +489,9 @@ class _CampaignPreviewCard extends StatelessWidget {
             runSpacing: 8,
             children: [
               _PreviewChip(label: status),
-              _PreviewChip(label: targetSegment.isEmpty ? 'segment' : targetSegment),
+              _PreviewChip(
+                label: targetSegment.isEmpty ? 'segment' : targetSegment,
+              ),
               _PreviewChip(label: startDate.isEmpty ? 'start date' : startDate),
               _PreviewChip(label: endDate.isEmpty ? 'end date' : endDate),
             ],

@@ -349,9 +349,7 @@ class NumberParser {
   }
 
   static double toRate(dynamic value) {
-    final parsed = toDouble(value);
-    if (parsed > 1) return parsed / 100;
-    return parsed;
+    return toDouble(value) / 100;
   }
 }
 
